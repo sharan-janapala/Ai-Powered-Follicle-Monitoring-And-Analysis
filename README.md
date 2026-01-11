@@ -1,2 +1,10 @@
 # Ai-Powered-Follicle-Monitoring-And-Analysis
-AI-based follicle detection and maturity analysis using YOLOv8 instance segmentation, ultrasound video preprocessing, and a Streamlit web application.
+This project presents an AI-powered follicle monitoring and maturity analysis system designed for IVF applications using ultrasound video data. Ultrasound videos are first converted into individual frames, followed by image preprocessing to enhance visual quality and consistency. Ovarian follicles are then annotated using Roboflow’s free polygon-based instance segmentation tools, enabling precise localization and segmentation of individual follicles.
+
+A YOLOv8-s instance segmentation model is trained on the annotated dataset to automatically detect ovarian follicles and estimate their diameters. Based on clinical criteria, follicles with a diameter of ≥18 mm are classified as mature, while smaller follicles are categorized as immature. The system computes and reports the total number of mature and immature follicles, providing essential insights into follicular development and readiness for oocyte retrieval.
+
+To make the solution accessible and interpretable, an interactive Streamlit-based web application is developed. The application allows users to upload ultrasound videos, visualize detected follicles with segmentation overlays, navigate frame-by-frame results, and download detailed reports, including follicle counts and size measurements. The platform is designed to support clinicians and researchers by offering clear visualizations and structured outputs that can assist in clinical decision-making.
+
+Overall, this project demonstrates an end-to-end computer vision pipeline—from data preparation and annotation to model training and deployment—highlighting the practical application of deep learning for automated follicle detection and maturity assessment in reproductive medicine.
+
+Tech Stack section : Tech Stack: Python, YOLOv8, OpenCV, Roboflow, Streamlit, NumPy, Pandas Workflow section : Workflow: Ultrasound Video → Frame Extraction → Preprocessing → Annotation → Model Training → Streamlit Deployment Disclaimer : ⚠️ This project is intended for research and decision support purposes only and does not replace clinical judgment.
