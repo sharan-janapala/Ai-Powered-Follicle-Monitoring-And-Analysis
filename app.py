@@ -330,6 +330,19 @@ def merge_close_masks(masks_info, distance_threshold=50):
     return merged
 
 # Analysis button
+if not CV2_AVAILABLE:
+    st.error("❌ Video processing is not supported on this cloud environment.")
+    st.info("💡 This feature runs fully on local machine. Cloud demo shows UI and reporting pipeline.")
+    st.stop()
+
+# Import YOLO only when cv2 is available
+try:
+    from ultralytics import YOLO
+except Exception as e:
+    st.error("❌ Failed to load YOLO model dependencies in this environment.")
+    st.info("💡 This app is designed for local execution with GPU/CPU + OpenCV support.")
+    st.stop()
+
 if st.button('🔬 Analyze Video', use_container_width=True):
     if uploaded is None:
         st.warning('⚠️ Please upload a video file')
