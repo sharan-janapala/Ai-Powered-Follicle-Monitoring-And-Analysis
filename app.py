@@ -16,6 +16,27 @@ from PIL import Image
 from ultralytics import YOLO
 from deep_translator import GoogleTranslator
 
+# ---------------- Session State Initialization ----------------
+if 'analysis_complete' not in st.session_state:
+    st.session_state['analysis_complete'] = False
+
+if 'results_df' not in st.session_state:
+    st.session_state['results_df'] = None
+
+if 'video_file' not in st.session_state:
+    st.session_state['video_file'] = None
+
+if 'analyzed_frames' not in st.session_state:
+    st.session_state['analyzed_frames'] = []
+
+if 'current_frame_idx' not in st.session_state:
+    st.session_state['current_frame_idx'] = 0
+
+if 'lang_code' not in st.session_state:
+    st.session_state['lang_code'] = 'en'
+# --------------------------------------------------------------
+
+
 
 st.set_page_config(page_title="Automated Follicle Detection and Maturity Analysis", layout="wide")
 
