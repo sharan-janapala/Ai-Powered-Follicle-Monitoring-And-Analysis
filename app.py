@@ -7,13 +7,10 @@ import pandas as pd
 
 try:
     import cv2
-except ImportError:
-    cv2 = None
+    CV2_AVAILABLE = True
+except Exception as e:
+    CV2_AVAILABLE = False
 
-if cv2 is None:
-    import streamlit as st
-    st.error("❌ OpenCV (cv2) failed to load. Please check opencv-python-headless installation.")
-    st.stop()
 
 from PIL import Image
 from ultralytics import YOLO
