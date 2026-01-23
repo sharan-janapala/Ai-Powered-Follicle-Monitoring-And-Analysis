@@ -1,40 +1,8 @@
 import streamlit as st
-import os
-import tempfile
-
-import numpy as np
-import pandas as pd
-
-try:
-    import cv2
-    CV2_AVAILABLE = True
-except Exception as e:
-    CV2_AVAILABLE = False
-
-
+import cv2, tempfile, os, numpy as np, pandas as pd
 from PIL import Image
+from ultralytics import YOLO
 from deep_translator import GoogleTranslator
-
-# ---------------- Session State Initialization ----------------
-if 'analysis_complete' not in st.session_state:
-    st.session_state['analysis_complete'] = False
-
-if 'results_df' not in st.session_state:
-    st.session_state['results_df'] = None
-
-if 'video_file' not in st.session_state:
-    st.session_state['video_file'] = None
-
-if 'analyzed_frames' not in st.session_state:
-    st.session_state['analyzed_frames'] = []
-
-if 'current_frame_idx' not in st.session_state:
-    st.session_state['current_frame_idx'] = 0
-
-if 'lang_code' not in st.session_state:
-    st.session_state['lang_code'] = 'en'
-# --------------------------------------------------------------
-
 
 
 st.set_page_config(page_title="Automated Follicle Detection and Maturity Analysis", layout="wide")
@@ -171,17 +139,18 @@ DISCLAIMER_EN = (
 
 # Initialize translator
 @st.cache_resource
-def get_translator(lang):
-    return GoogleTranslator(source='auto', target=lang)
+def get_translator():
+    return Translator()
 
 def translate_text(text, lang_code):
+    """Translate text to target language"""
     if lang_code == 'en':
         return text
     try:
-        translator = get_translator(lang_code)
-        return translator.translate(text)
+        translator = get_translator()
+        return translator.translate(text, dest=lang_code).text
     except:
-        return text
+        return text  # Return original if translation fails
 
 def get_case_from_csv(df):
     """Determine if follicles are mature or immature based on CSV data"""
@@ -349,31 +318,19 @@ def merge_close_masks(masks_info, distance_threshold=50):
     return merged
 
 # Analysis button
-if not CV2_AVAILABLE:
-    st.error("❌ Video processing is not supported on this cloud environment.")
-    st.info("💡 This feature runs fully on local machine. Cloud demo shows UI and reporting pipeline.")
-    st.stop()
-
 if st.button('🔬 Analyze Video', use_container_width=True):
-
-    # Check cv2 only when user clicks analyze
-    if not CV2_AVAILABLE:
-        st.error("❌ Video processing is not supported on this cloud environment.")
-        st.info("💡 This feature runs fully on local machine. Cloud demo shows UI and reporting pipeline.")
-        st.stop()
-
-    # Import YOLO lazily
-    try:
-        from ultralytics import YOLO
-    except Exception:
-        st.error("❌ Failed to load YOLO model dependencies in this environment.")
-        st.info("💡 This app is designed for local execution with GPU/CPU + OpenCV support.")
-        st.stop()
-
     if uploaded is None:
         st.warning('⚠️ Please upload a video file')
-        st.stop()
-
+    else:
+        tmp = tempfile.NamedTemporaryFile(delete=False, suffix='.mp4')
+        tmp.write(uploaded.read())
+        tmp.flush()
+        video_path = tmp.name
+        
+        st.info('📊 Loading model...')
+        if not os.path.exists('best.pt'):
+            st.error('❌ best.pt not found in app folder. Place weights as best.pt')
+            st.stop()
         
         model = YOLO('best.pt')
         st.info('🎬 Processing video (detections at ~1 FPS)...')
