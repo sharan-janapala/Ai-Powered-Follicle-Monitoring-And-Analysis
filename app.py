@@ -1,5 +1,20 @@
 import streamlit as st
-import cv2, tempfile, os, numpy as np, pandas as pd
+import os
+import tempfile
+
+import numpy as np
+import pandas as pd
+
+try:
+    import cv2
+except ImportError:
+    cv2 = None
+
+if cv2 is None:
+    import streamlit as st
+    st.error("❌ OpenCV (cv2) failed to load. Please check opencv-python-headless installation.")
+    st.stop()
+
 from PIL import Image
 from ultralytics import YOLO
 from deep_translator import GoogleTranslator
