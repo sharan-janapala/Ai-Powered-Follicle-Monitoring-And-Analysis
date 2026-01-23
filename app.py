@@ -13,7 +13,6 @@ except Exception as e:
 
 
 from PIL import Image
-from ultralytics import YOLO
 from deep_translator import GoogleTranslator
 
 # ---------------- Session State Initialization ----------------
@@ -172,18 +171,17 @@ DISCLAIMER_EN = (
 
 # Initialize translator
 @st.cache_resource
-def get_translator():
-    return Translator()
+def get_translator(lang):
+    return GoogleTranslator(source='auto', target=lang)
 
 def translate_text(text, lang_code):
-    """Translate text to target language"""
     if lang_code == 'en':
         return text
     try:
-        translator = get_translator()
-        return translator.translate(text, dest=lang_code).text
+        translator = get_translator(lang_code)
+        return translator.translate(text)
     except:
-        return text  # Return original if translation fails
+        return text
 
 def get_case_from_csv(df):
     """Determine if follicles are mature or immature based on CSV data"""
@@ -356,27 +354,26 @@ if not CV2_AVAILABLE:
     st.info("💡 This feature runs fully on local machine. Cloud demo shows UI and reporting pipeline.")
     st.stop()
 
-# Import YOLO only when cv2 is available
-try:
-    from ultralytics import YOLO
-except Exception as e:
-    st.error("❌ Failed to load YOLO model dependencies in this environment.")
-    st.info("💡 This app is designed for local execution with GPU/CPU + OpenCV support.")
-    st.stop()
-
 if st.button('🔬 Analyze Video', use_container_width=True):
+
+    # Check cv2 only when user clicks analyze
+    if not CV2_AVAILABLE:
+        st.error("❌ Video processing is not supported on this cloud environment.")
+        st.info("💡 This feature runs fully on local machine. Cloud demo shows UI and reporting pipeline.")
+        st.stop()
+
+    # Import YOLO lazily
+    try:
+        from ultralytics import YOLO
+    except Exception:
+        st.error("❌ Failed to load YOLO model dependencies in this environment.")
+        st.info("💡 This app is designed for local execution with GPU/CPU + OpenCV support.")
+        st.stop()
+
     if uploaded is None:
         st.warning('⚠️ Please upload a video file')
-    else:
-        tmp = tempfile.NamedTemporaryFile(delete=False, suffix='.mp4')
-        tmp.write(uploaded.read())
-        tmp.flush()
-        video_path = tmp.name
-        
-        st.info('📊 Loading model...')
-        if not os.path.exists('best.pt'):
-            st.error('❌ best.pt not found in app folder. Place weights as best.pt')
-            st.stop()
+        st.stop()
+
         
         model = YOLO('best.pt')
         st.info('🎬 Processing video (detections at ~1 FPS)...')
